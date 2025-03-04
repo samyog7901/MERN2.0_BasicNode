@@ -5,3 +5,6 @@ Day 3
 folder banaye
 folder lai vscode ma kholera npm init command haney
 Tip: npm init -y(question soddhdaina)
+
+for post request 
+body>Raw>json
