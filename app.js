@@ -21,7 +21,7 @@ app.get("/",(req,res)=>{
 })
 
 
-
+// create
 app.post("/book",async(req,res)=>{
     const {bookName,bookPrice,isbnNumber,authorName,publishedAt,publication} = req.body
     await Book.create({
@@ -51,17 +51,59 @@ app.get("/book",async (req,res)=>{
 app.get("/book/:id",async (req,res)=>{
     try{
         const id = req.params.id
-    const book = await Book.findById(id) //object return garxa
-    res.status(200).json({
-        message : "Single book fetched successfully",
-        data : book
-    })
+        const book = await Book.findById(id) //object return garxa
+        res.status(200).json({
+            message : "Single book fetched successfully",
+            data : book
+        })
     }catch(error){
         res.status(500).json({
             message : "Something went wrong"
         })
     }
 })
+
+// delete operation
+app.delete("/book/:id",async (req,res)=>{
+    try{    
+        const id = req.params.id
+        await Book.findByIdAndDelete(id)
+        res.status(200).json({
+            message : "Book deleted successfully"
+        })
+        }catch(error){
+            res.status(500).json({
+                message : "Something went wrong"
+            })
+        }
+})
+
+// update operation
+
+app.patch("/book/:id",async (req,res)=>{
+    try{
+        const id = req.params.id
+        const {bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body
+        await Book.findByIdAndUpdate(id,{
+            bookName,
+            bookPrice,
+            isbnNumber,
+            authorName,
+            publishedAt,
+            publication
+
+        })
+        res.status(200).json({
+            message : "Book updated successfully"
+        })
+    }catch(e){
+        res.status(500).json({
+            message : "Something went wrong"
+        })
+    }
+})
+
+
 
 
 const port = 3000

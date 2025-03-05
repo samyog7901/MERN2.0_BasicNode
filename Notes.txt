@@ -8,3 +8,8 @@ Tip: npm init -y(question soddhdaina)
 
 for post request 
 body>Raw>json
+
+project day 2:
+  1. update ra delete api banaye ra postman ma test hane
+  2. documentation banayera publish hane 
+  3. Rest ra Resdtful api ko barema thapaye ra restful api banaye
