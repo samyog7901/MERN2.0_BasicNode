@@ -19,6 +19,9 @@ const bookSchema = new mongoose.Schema({
     },
     publication : {
         type : String
+    },
+    bookImage : {
+        type : String
     }
 })
 

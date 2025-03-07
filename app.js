@@ -3,9 +3,12 @@ const app = express()
 const mongoose = require('mongoose')
 const connectToDatabase = require('./database')
 const Book = require('./model/bookModel')
+const { multer, storage } = require('./middleware/multerConfig')
 
 // expresslai json format bujhne power diye
 app.use(express.json())
+const upload = multer({ storage : storage })
+
 
 
 connectToDatabase()
@@ -22,7 +25,7 @@ app.get("/",(req,res)=>{
 
 
 // create
-app.post("/book",async(req,res)=>{
+app.post("/book",upload.single('image'),async(req,res)=>{
     const {bookName,bookPrice,isbnNumber,authorName,publishedAt,publication} = req.body
     await Book.create({
         bookName,
@@ -30,7 +33,8 @@ app.post("/book",async(req,res)=>{
         isbnNumber,
         authorName,
         publishedAt,
-        publication
+        publication,
+        image : req.file.filename
 
     })
     res.status(201).json({
