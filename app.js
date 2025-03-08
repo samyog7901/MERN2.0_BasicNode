@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const fs = require('fs')
 const mongoose = require('mongoose')
 const connectToDatabase = require('./database')
 const Book = require('./model/bookModel')
@@ -8,6 +9,7 @@ const { multer, storage } = require('./middleware/multerConfig')
 // expresslai json format bujhne power diye
 app.use(express.json())
 const upload = multer({ storage : storage })
+
 
 
 
@@ -26,6 +28,12 @@ app.get("/",(req,res)=>{
 
 // create
 app.post("/book",upload.single('image'),async(req,res)=>{
+    let fileName;
+    if(!req.file){
+        fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB3DSXCp2cUMD2gTlYhjyQzxwCduaqs0VrFjO8iRBbMY_mYkRXQ1JGKXk&s"
+    }else{
+        fileName = "http://localhost:3000/" + req.file.filename
+    }
     const {bookName,bookPrice,isbnNumber,authorName,publishedAt,publication} = req.body
     await Book.create({
         bookName,
@@ -34,7 +42,7 @@ app.post("/book",upload.single('image'),async(req,res)=>{
         authorName,
         publishedAt,
         publication,
-        image : req.file.filename
+        imageUrl : req.file.filename
 
     })
     res.status(201).json({
@@ -84,17 +92,36 @@ app.delete("/book/:id",async (req,res)=>{
 
 // update operation
 
-app.patch("/book/:id",async (req,res)=>{
+app.patch("/book/:id",upload.single('image'), async (req,res)=>{
     try{
         const id = req.params.id
         const {bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body
+        const oldDatas = await Book.findById(id)
+        let fileName;
+        if(req.file){
+            const oldImagePath = oldDatas.imageUrl
+            const localHostUrlLength = "http://localhost:3000/".length
+            const newOldImagePath = oldImagePath.slice(localHostUrlLength)
+            console.log(newOldImagePath)
+            fs.unlink(`./storage/${newOldImagePath}`,(err)=>{
+                if(err){
+                    console.log(err)
+                }else{
+                    console.log("file deleted successfully!")
+                }
+            })
+            fileName = "http://localhost:3000/" + req.file.filename
+            
+
+        }
         await Book.findByIdAndUpdate(id,{
             bookName,
             bookPrice,
             isbnNumber,
             authorName,
             publishedAt,
-            publication
+            publication,
+            imageUrl: fileName
 
         })
         res.status(200).json({
@@ -107,8 +134,8 @@ app.patch("/book/:id",async (req,res)=>{
     }
 })
 
-
-
+//storage vitrako kura acces dey read garna ++ is very critical thing
+app.use(express.static("./storage/"))
 
 const port = 3000
 app.listen(port, () => {

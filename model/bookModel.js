@@ -2,8 +2,8 @@ const mongoose = require('mongoose')
 
 const bookSchema = new mongoose.Schema({
     bookName : {
-        type : String,
-        unique : true
+        type : String
+        // unique : true
     },
     bookPrice : {
         type : String
@@ -20,7 +20,7 @@ const bookSchema = new mongoose.Schema({
     publication : {
         type : String
     },
-    bookImage : {
+    imageUrl : {
         type : String
     }
 })
