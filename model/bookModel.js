@@ -5,6 +5,9 @@ const bookSchema = new mongoose.Schema({
         type : String
         // unique : true
     },
+    description : {
+        type : String
+    },
     bookPrice : {
         type : String
     },

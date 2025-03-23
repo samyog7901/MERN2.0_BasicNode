@@ -5,7 +5,14 @@ const mongoose = require('mongoose')
 const connectToDatabase = require('./database')
 const Book = require('./model/bookModel')
 const { multer, storage } = require('./middleware/multerConfig')
+// CORS Package
+const cors = require('cors')
 
+
+app.use(cors({
+    origin: '*'
+
+}))
 // expresslai json format bujhne power diye
 app.use(express.json())
 const upload = multer({ storage : storage })
