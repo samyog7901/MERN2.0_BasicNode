@@ -9,6 +9,7 @@ const { multer, storage } = require('./middleware/multerConfig')
 const cors = require('cors')
 
 
+
 app.use(cors({
     origin: '*'
 
@@ -34,27 +35,39 @@ app.get("/",(req,res)=>{
 
 
 // create
-app.post("/book",upload.single('image'),async(req,res)=>{
-    let fileName;
-    if(!req.file){
-        fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB3DSXCp2cUMD2gTlYhjyQzxwCduaqs0VrFjO8iRBbMY_mYkRXQ1JGKXk&s"
-    }else{
-        fileName = "http://localhost:3000/" + req.file.filename
-    }
-    const {bookName,bookPrice,isbnNumber,authorName,publishedAt,publication} = req.body
-    await Book.create({
-        bookName,
-        bookPrice,
-        isbnNumber,
-        authorName,
-        publishedAt,
-        publication,
-        imageUrl : req.file.filename
+//storage vitrako kura acces dey read garna ++ is very critical thing
+// Serve static files (for accessing uploaded images)
+app.use("/storage", express.static("storage"))
 
-    })
-    res.status(201).json({
-        "message" : "Book created successfully"
-    })
+app.post("/book", upload.single("image"), async (req, res) => {
+    console.log("File received:", req.file)
+
+    // Default image URL if no file is uploaded
+    let fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB3DSXCp2cUMD2gTlYhjyQzxwCduaqs0VrFjO8iRBbMY_mYkRXQ1JGKXk&s"
+    if (req.file) {
+        fileName = `http://localhost:3000/storage/${req.file.filename}`
+    }
+
+    const { bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body
+
+    try {
+        const newBook = await Book.create({
+            bookName,
+            bookPrice,
+            isbnNumber,
+            authorName,
+            publishedAt,
+            publication,
+            imageUrl: fileName // Use the correctly formatted file URL
+        });
+
+        res.status(201).json({
+            message: "Book created successfully",
+            book: newBook
+        })
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    }
 })
 
 // all read
@@ -141,8 +154,7 @@ app.patch("/book/:id",upload.single('image'), async (req,res)=>{
     }
 })
 
-//storage vitrako kura acces dey read garna ++ is very critical thing
-app.use(express.static("./storage/"))
+
 
 const port = 3000
 app.listen(port, () => {
