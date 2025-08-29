@@ -1,39 +1,54 @@
-const express = require('express');
-const app = express();
-const fs = require('fs');
-const mongoose = require('mongoose');
-const connectToDatabase = require('./database');
-const Book = require('./model/bookModel');
-const { multer, storage } = require('./middleware/multerConfig');
-const cors = require('cors');
-
-app.use(cors({ origin: '*' }));
-app.use(express.json());
-
-const upload = multer({ storage: storage });
-
-connectToDatabase();
+const express = require('express')
+const app = express()
+const fs = require('fs')
+const mongoose = require('mongoose')
+const connectToDatabase = require('./database')
+const Book = require('./model/bookModel')
+const { multer, storage } = require('./middleware/multerConfig')
+// CORS Package
+const cors = require('cors')
 
 
-// Serve static files (uploaded images)
-app.use("/storage", express.static("storage"));
 
-// Helper for base URL (works both local & Render)
-const getBaseUrl = (req) => `${req.protocol}://${req.get("host")}`;
+app.use(cors({
+    origin: '*'
 
-app.post("/",(req,res)=>{
-    res.send("📚 Welcome to the Book API! Use /book endpoints to interact with books.")
+}))
+// expresslai json format bujhne power diye
+app.use(express.json())
+const upload = multer({ storage : storage })
+
+
+
+
+connectToDatabase()
+
+
+
+
+
+app.get("/",(req,res)=>{
+    res.status(200).json({
+        "message" : "Success!"
+    })
 })
-// Create Book
-app.post("/book", upload.single("image"), async (req, res) => {
-    console.log("File received:", req.file);
 
-    let fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB3DSXCp2cUMD2gTlYhjyQzxwCduaqs0VrFjO8iRBbMY_mYkRXQ1JGKXk&s";
+
+// create
+//storage vitrako kura acces dey read garna ++ is very critical thing
+// Serve static files (for accessing uploaded images)
+app.use("/storage", express.static("storage"))
+
+app.post("/book", upload.single("image"), async (req, res) => {
+    console.log("File received:", req.file)
+
+    // Default image URL if no file is uploaded
+    let fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB3DSXCp2cUMD2gTlYhjyQzxwCduaqs0VrFjO8iRBbMY_mYkRXQ1JGKXk&s"
     if (req.file) {
-        fileName = `${getBaseUrl(req)}/storage/${req.file.filename}`;
+        fileName = `https://mern2-0-basicnode-zrh4.onrender.com/${req.file.filename}`
     }
 
-    const { bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body;
+    const { bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body
 
     try {
         const newBook = await Book.create({
@@ -43,62 +58,83 @@ app.post("/book", upload.single("image"), async (req, res) => {
             authorName,
             publishedAt,
             publication,
-            imageUrl: fileName
+            imageUrl: fileName // Use the correctly formatted file URL
         });
 
-        res.status(201).json({ message: "Book created successfully", book: newBook });
+        res.status(201).json({
+            message: "Book created successfully",
+            book: newBook
+        })
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message })
     }
-});
+})
 
-// Get all Books
-app.get("/book", async (req, res) => {
-    const books = await Book.find();
-    res.status(200).json({ message: "Books found successfully", data: books });
-});
+// all read
+app.get("/book",async (req,res)=>{
+    const books = await Book.find() //array return garaxa
+    res.status(200).json({
+        "message" : "Books found successfully",
+        data : books
+    })
+})
 
-// Get single Book
-app.get("/book/:id", async (req, res) => {
-    try {
-        const book = await Book.findById(req.params.id);
-        res.status(200).json({ message: "Single book fetched successfully!", data: book });
-    } catch (error) {
-        res.status(500).json({ message: "Something went wrong" });
+// single read
+app.get("/book/:id",async (req,res)=>{
+    try{
+        const id = req.params.id
+        const book = await Book.findById(id) //object return garxa
+        res.status(200).json({
+            message : "Single book fetched successfully!",
+            data : book
+        })
+    }catch(error){
+        res.status(500).json({
+            message : "Something went wrong"
+        })
     }
-});
+})
 
-// Delete Book + image
-app.delete("/book/:id", async (req, res) => {
-    try {
-        const book = await Book.findById(req.params.id);
-        if (book?.imageUrl) {
-            const fileNameOnly = book.imageUrl.split("/storage/")[1];
-            if (fileNameOnly) fs.unlink(`./storage/${fileNameOnly}`, () => {});
+// delete operation
+app.delete("/book/:id",async (req,res)=>{
+    try{    
+        const id = req.params.id
+        await Book.findByIdAndDelete(id)
+        res.status(200).json({
+            message : "Book deleted successfully"
+        })
+        }catch(error){
+            res.status(500).json({
+                message : "Something went wrong"
+            })
         }
-        await Book.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: "Book deleted successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "Something went wrong" });
-    }
-});
+})
 
-// Update Book
-app.patch("/book/:id", upload.single("image"), async (req, res) => {
-    try {
-        const id = req.params.id;
-        const { bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body;
-        const oldData = await Book.findById(id);
+// update operation
 
-        let fileName = oldData.imageUrl;
-        if (req.file) {
-            // delete old image
-            const fileNameOnly = oldData.imageUrl.split("/storage/")[1];
-            if (fileNameOnly) fs.unlink(`./storage/${fileNameOnly}`, () => {});
-            fileName = `${getBaseUrl(req)}/storage/${req.file.filename}`;
+app.patch("/book/:id",upload.single('image'), async (req,res)=>{
+    try{
+        const id = req.params.id
+        const {bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body
+        const oldDatas = await Book.findById(id)
+        let fileName;
+        if(req.file){
+            const oldImagePath = oldDatas.imageUrl
+            const localHostUrlLength = "https://mern2-0-basicnode-zrh4.onrender.com/".length
+            const newOldImagePath = oldImagePath.slice(localHostUrlLength)
+            console.log(newOldImagePath)
+            fs.unlink(`./storage/${newOldImagePath}`,(err)=>{
+                if(err){
+                    console.log(err)
+                }else{
+                    console.log("file deleted successfully!")
+                }
+            })
+            fileName = "https://mern2-0-basicnode-zrh4.onrender.com/storage/" + req.file.filename
+            
+
         }
-
-        await Book.findByIdAndUpdate(id, {
+        await Book.findByIdAndUpdate(id,{
             bookName,
             bookPrice,
             isbnNumber,
@@ -106,13 +142,21 @@ app.patch("/book/:id", upload.single("image"), async (req, res) => {
             publishedAt,
             publication,
             imageUrl: fileName
-        });
 
-        res.status(200).json({ message: "Book updated successfully" });
-    } catch (e) {
-        res.status(500).json({ message: "Something went wrong!" });
+        })
+        res.status(200).json({
+            message : "Book updated successfully"
+        })
+    }catch(e){
+        res.status(500).json({
+            message : "Something went wrong!"
+        })
     }
-});
+})
 
-const port = 3000;
-app.listen(port, () => console.log(`✅ Server started on port ${port}`));
+
+
+const port = 3000
+app.listen(port, () => {
+    console.log(`Server has started at port ${port}`)
+    })
