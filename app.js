@@ -130,7 +130,7 @@ app.patch("/book/:id",upload.single('image'), async (req,res)=>{
                     console.log("file deleted successfully!")
                 }
             })
-            fileName = "http://localhost:3000/" + req.file.filename
+            fileName = "https://mern2-0-basicnode-zrh4.onrender.com/" + req.file.filename
             
 
         }
