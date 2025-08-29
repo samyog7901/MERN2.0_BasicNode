@@ -45,7 +45,7 @@ app.post("/book", upload.single("image"), async (req, res) => {
     // Default image URL if no file is uploaded
     let fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB3DSXCp2cUMD2gTlYhjyQzxwCduaqs0VrFjO8iRBbMY_mYkRXQ1JGKXk&s"
     if (req.file) {
-        fileName = `https://mern2-0-basicnode-zrh4.onrender.com/storage/${req.file.filename}`
+        fileName = `http://localhost:3000/storage/${req.file.filename}`
     }
 
     const { bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body
@@ -120,7 +120,7 @@ app.patch("/book/:id",upload.single('image'), async (req,res)=>{
         let fileName;
         if(req.file){
             const oldImagePath = oldDatas.imageUrl
-            const localHostUrlLength = "https://mern2-0-basicnode-zrh4.onrender.com/".length
+            const localHostUrlLength = "http://localhost:3000/".length
             const newOldImagePath = oldImagePath.slice(localHostUrlLength)
             console.log(newOldImagePath)
             fs.unlink(`./storage/${newOldImagePath}`,(err)=>{
@@ -130,7 +130,7 @@ app.patch("/book/:id",upload.single('image'), async (req,res)=>{
                     console.log("file deleted successfully!")
                 }
             })
-            fileName = "https://mern2-0-basicnode-zrh4.onrender.com/" + req.file.filename
+            fileName = "http://localhost:3000/" + req.file.filename
             
 
         }
