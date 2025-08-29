@@ -14,12 +14,16 @@ const upload = multer({ storage: storage });
 
 connectToDatabase();
 
+
 // Serve static files (uploaded images)
 app.use("/storage", express.static("storage"));
 
 // Helper for base URL (works both local & Render)
 const getBaseUrl = (req) => `${req.protocol}://${req.get("host")}`;
 
+app.post("/",(req,res)=>{
+    res.send("📚 Welcome to the Book API! Use /book endpoints to interact with books.")
+})
 // Create Book
 app.post("/book", upload.single("image"), async (req, res) => {
     console.log("File received:", req.file);
