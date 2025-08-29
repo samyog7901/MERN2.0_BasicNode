@@ -120,7 +120,7 @@ app.patch("/book/:id",upload.single('image'), async (req,res)=>{
         let fileName;
         if(req.file){
             const oldImagePath = oldDatas.imageUrl
-            const localHostUrlLength = "http://localhost:3000/".length
+            const localHostUrlLength = "https://mern2-0-basicnode-zrh4.onrender.com/".length
             const newOldImagePath = oldImagePath.slice(localHostUrlLength)
             console.log(newOldImagePath)
             fs.unlink(`./storage/${newOldImagePath}`,(err)=>{
