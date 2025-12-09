@@ -4,6 +4,8 @@ import Book from "./model/bookModel.js";
 import upload from "./middleware/multerConfig.js"; // default export
 import cors from "cors";
 import connectToDatabase from "./database/index.js";
+const app = express()
+
 
 
 
@@ -156,4 +158,4 @@ app.patch("/book/:id",upload.single('image'), async (req,res)=>{
 const port = 3000
 app.listen(port, () => {
     console.log(`Server has started at port ${port}`)
-    })
+})
