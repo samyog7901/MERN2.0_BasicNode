@@ -1,19 +1,19 @@
-const multer = require('multer')
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // file validation
+import multer from 'multer'
+import {storage} from '../services/cloudinaryConfig'
+
+const upload = multer({storage :storage,
+    fileFilter : (req,file,cb)=>{
         const allowedFileTypes = ['image/jpeg', 'image/png', 'image/jpg']
-        if (!allowedFileTypes.includes(file.mimetype)) {
-            return cb(new Error('Invalid file type. Only images are allowed.'))
-
+        if(allowedFileTypes.includes(file.mimetype)){
+            cb(null,true)
+        }else{
+            cb(new Error('Only .png, .jpg and .jpeg format allowed!'), false)
         }
-        cb(null, './storage') //cb(error, success)
     },
-    filename: (req, file, cb) => {
-        cb(null,Date.now()+ "-" + file.originalname) //cb(error, success)
+    limits : {
+        fileSize: 1024 * 1024 * 2 // 2MB
     }
-
 })
 
-module.exports = {multer, storage}  //exporting the multer and storage object
+export default upload
 
