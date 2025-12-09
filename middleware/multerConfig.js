@@ -1,5 +1,5 @@
 import multer from 'multer'
-import {storage} from '../services/cloudinaryConfig'
+import { storage } from '../services/cloudinaryConfig'
 
 const upload = multer({storage :storage,
     fileFilter : (req,file,cb)=>{
