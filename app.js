@@ -39,35 +39,28 @@ app.get("/",(req,res)=>{
 app.use("/storage", express.static("storage"))
 
 app.post("/book", upload.single("image"), async (req, res) => {
-    console.log("File received:", req.file)
-
-    // Default image URL if no file is uploaded
-    let fileName = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB3DSXCp2cUMD2gTlYhjyQzxwCduaqs0VrFjO8iRBbMY_mYkRXQ1JGKXk&s"
-    if (req.file) {
-        fileName = `https://mern2-0-basicnode-zrh4.onrender.com/${req.file.filename}`
-    }
-
-    const { bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body
-
     try {
-        const newBook = await Book.create({
-            bookName,
-            bookPrice,
-            isbnNumber,
-            authorName,
-            publishedAt,
-            publication,
-            imageUrl: fileName // Use the correctly formatted file URL
-        });
-
-        res.status(201).json({
-            message: "Book created successfully",
-            book: newBook
-        })
+      let imageUrl =
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB3DSXCp2cUMD2gTlYhjyQzxwCduaqs0VrFjO8iRBbMY_mYkRXQ1JGKXK&s";
+  
+      if (req.file) {
+        imageUrl = req.file.path; // cloudinary secure_url
+      }
+  
+      const newBook = await Book.create({
+        ...req.body,
+        imageUrl,
+      });
+  
+      res.status(201).json({
+        message: "Book created successfully",
+        data: newBook,
+      });
     } catch (error) {
-        res.status(500).json({ error: error.message })
+      res.status(500).json({ error: error.message });
     }
-})
+  });
+  
 
 // all read
 app.get("/book",async (req,res)=>{
@@ -111,47 +104,43 @@ app.delete("/book/:id",async (req,res)=>{
 
 // update operation
 
-app.patch("/book/:id",upload.single('image'), async (req,res)=>{
-    try{
-        const id = req.params.id
-        const {bookName, bookPrice, isbnNumber, authorName, publishedAt, publication } = req.body
-        const oldDatas = await Book.findById(id)
-        let fileName;
-        if(req.file){
-            const oldImagePath = oldDatas.imageUrl
-            const localHostUrlLength = "https://mern2-0-basicnode-zrh4.onrender.com/".length
-            const newOldImagePath = oldImagePath.slice(localHostUrlLength)
-            console.log(newOldImagePath)
-            fs.unlink(`./storage/${newOldImagePath}`,(err)=>{
-                if(err){
-                    console.log(err)
-                }else{
-                    console.log("file deleted successfully!")
-                }
-            })
-            fileName = "https://mern2-0-basicnode-zrh4.onrender.com/storage/" + req.file.filename
-            
-
+app.patch("/book/:id", upload.single("image"), async (req, res) => {
+    try {
+      const id = req.params.id;
+      const book = await Book.findById(id);
+  
+      if (!book) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+  
+      let imageUrl = book.imageUrl;
+  
+      // === If new image provided ===
+      if (req.file) {
+        // delete old image unless it's default
+        if (!book.imageUrl.includes("gstatic")) {
+          const publicId = book.imageUrl
+            .split("/")
+            .pop()
+            .split(".")[0];
+  
+          await cloudinary.uploader.destroy("Spiritual-Hub/" + publicId);
         }
-        await Book.findByIdAndUpdate(id,{
-            bookName,
-            bookPrice,
-            isbnNumber,
-            authorName,
-            publishedAt,
-            publication,
-            imageUrl: fileName
-
-        })
-        res.status(200).json({
-            message : "Book updated successfully"
-        })
-    }catch(e){
-        res.status(500).json({
-            message : "Something went wrong!"
-        })
+  
+        imageUrl = req.file.path; // cloudinary secure_url
+      }
+  
+      await Book.findByIdAndUpdate(id, {
+        ...req.body,
+        imageUrl,
+      });
+  
+      res.status(200).json({ message: "Book updated successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Something went wrong" });
     }
-})
+  });
+  
 
 
 
