@@ -1,12 +1,9 @@
-const express = require('express')
-const app = express()
-const fs = require('fs')
-const mongoose = require('mongoose')
-const connectToDatabase = require('./database')
-const Book = require('./model/bookModel')
-const { multer, storage } = require('./middleware/multerConfig')
-// CORS Package
-const cors = require('cors')
+import express from "express";
+import fs from "fs";
+import connectToDatabase from "./database.js";
+import Book from "./model/bookModel.js";
+import upload from "./middleware/multerConfig.js"; // default export
+import cors from "cors";
 
 
 
@@ -16,7 +13,7 @@ app.use(cors({
 }))
 // expresslai json format bujhne power diye
 app.use(express.json())
-const upload = multer({ storage : storage })
+
 
 
 
