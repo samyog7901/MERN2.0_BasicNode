@@ -1,9 +1,9 @@
 import express from "express";
 import fs from "fs";
-import connectToDatabase from "./database.js";
 import Book from "./model/bookModel.js";
 import upload from "./middleware/multerConfig.js"; // default export
 import cors from "cors";
+import connectToDatabase from "./database/index.js";
 
 
 
