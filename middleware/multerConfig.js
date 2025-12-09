@@ -1,7 +1,8 @@
 import multer from 'multer'
-import { storage } from '../services/cloudinaryConfig'
+import { storage } from '../services/cloudinaryConfig.js'
 
-const upload = multer({storage :storage,
+const upload = multer({
+    storage :storage,
     fileFilter : (req,file,cb)=>{
         const allowedFileTypes = ['image/jpeg', 'image/png', 'image/jpg']
         if(allowedFileTypes.includes(file.mimetype)){
